@@ -1,0 +1,63 @@
+{
+    "name": "ninjaportal/admin",
+    "description": "A Laravel Like Apigee DevPortal",
+    "keywords": [
+        "lordjoo",
+        "laravel",
+        "laravel-apigee",
+        "apigee","apigee-php"
+    ],
+    "homepage": "https://github.com/ninjaportal/ninjaportal",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "lordjoo",
+            "email": "youssef.afify122@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "spatie/laravel-package-tools": "^1.16.3",
+        "illuminate/contracts": "^11.0",
+        "guzzlehttp/guzzle": "^7.2",
+        "nesbot/carbon": "^2.0",
+        "blade-ui-kit/blade-heroicons": "2.3.0",
+        "spatie/laravel-permission": "6.9.0",
+        "althinect/filament-spatie-roles-permissions": "v2.2.28"
+    },
+    "require-dev": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "NinjaPortal\\Admin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NinjaPortal\\Admin\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+        "test": "vendor/bin/pest",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NinjaPortal\\Admin\\NinjaAdminServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
