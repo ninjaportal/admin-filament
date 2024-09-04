@@ -14,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use NinjaPortal\Admin\Constants;
 use NinjaPortal\Portal\Models\Menu;
 
 class MenuManager extends Page
@@ -151,4 +152,8 @@ class MenuManager extends Page
             ->success()->send();
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __(Constants::NAVIGATION_GROUPS['ADMIN']);
+    }
 }

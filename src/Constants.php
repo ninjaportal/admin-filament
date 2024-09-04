@@ -10,4 +10,10 @@ class Constants {
         'GENERAL' => 'general',
         'ADMIN' => 'admin',
     ];
+
+    const SETTING_TYPES = [
+        'string' => 'string',
+        'integer' => 'integer',
+        'boolean' => 'boolean',
+    ];
 }

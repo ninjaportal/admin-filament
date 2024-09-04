@@ -10,6 +10,7 @@ use NinjaPortal\Admin\Resources\AdminResource;
 use NinjaPortal\Admin\Resources\ApiProductResource;
 use NinjaPortal\Admin\Resources\AudienceResource;
 use NinjaPortal\Admin\Resources\CategoryResource;
+use NinjaPortal\Admin\Resources\SettingGroupResource;
 use NinjaPortal\Admin\Resources\UserResource;
 use NinjaPortal\FilamentTranslations\NinjaFilamentTranslatablePlugin;
 
@@ -21,7 +22,8 @@ class NinjaAdminPlugin implements Plugin
         AudienceResource::class,
         CategoryResource::class,
         ApiProductResource::class,
-        UserResource::class
+        UserResource::class,
+        SettingGroupResource::class
     ];
 
     protected array $widgets = [];

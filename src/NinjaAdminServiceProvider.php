@@ -3,6 +3,9 @@
 namespace NinjaPortal\Admin;
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use NinjaPortal\Admin\Models\Setting;
+use NinjaPortal\Admin\Services\SettingService;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -35,6 +38,12 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
             'driver' => 'session',
             'provider' => 'admin',
         ]);
+
+        try {
+            SettingService::loadAllSettings();
+        } catch (\Exception $e) {
+            Log::error("Failed to load settings: {$e->getMessage()}");
+        }
     }
 
 
