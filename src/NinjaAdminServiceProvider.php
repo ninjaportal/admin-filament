@@ -38,12 +38,6 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
             'driver' => 'session',
             'provider' => 'admin',
         ]);
-
-        try {
-            SettingService::loadAllSettings();
-        } catch (\Exception $e) {
-            Log::error("Failed to load settings: {$e->getMessage()}");
-        }
     }
 
 
