@@ -13,7 +13,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use NinjaPortal\Admin\Constants;
-use NinjaPortal\Admin\Models\SettingGroup;
+use NinjaPortal\Portal\Models\SettingGroup;
 use NinjaPortal\Admin\Resources\SettingGroupResource\Pages;
 use NinjaPortal\Admin\Resources\SettingGroupResource\RelationManagers\SettingsRelationManager;
 
