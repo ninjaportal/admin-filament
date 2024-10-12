@@ -20,7 +20,10 @@ class NinjaAdminPlugin implements Plugin
         Resources\SettingGroupResource::class
     ];
 
-    protected array $widgets = [];
+    protected array $widgets = [
+        Widgets\OverviewWidget::class,
+        Widgets\UsersWidgetTable::class,
+    ];
 
     protected array $pages = [
         Pages\MenuManager::class,
