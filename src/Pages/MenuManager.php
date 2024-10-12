@@ -15,12 +15,13 @@ use Filament\Pages\Page;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use NinjaPortal\Admin\Constants;
+use NinjaPortal\FilamentShield\Traits\HasPageShield;
 use NinjaPortal\Portal\Models\Menu;
 
 class MenuManager extends Page
 {
 
-    use InteractsWithForms, InteractsWithActions;
+    use InteractsWithForms, InteractsWithActions, HasPageShield;
 
     protected static ?string $title = 'Menu Manager';
     protected static ?string $navigationIcon = 'heroicon-o-bars-3';
@@ -154,6 +155,6 @@ class MenuManager extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __(Constants::NAVIGATION_GROUPS['ADMIN']);
+        return __("ninjaadmin::ninjaadmin.navigation_groups.".Constants::NAVIGATION_GROUPS['ADMIN']);
     }
 }

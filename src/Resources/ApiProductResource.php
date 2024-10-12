@@ -159,6 +159,6 @@ class ApiProductResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __(Constants::NAVIGATION_GROUPS['CONTENT']);
+        return __("ninjaadmin::ninjaadmin.navigation_groups.".Constants::NAVIGATION_GROUPS['CONTENT']);
     }
 }

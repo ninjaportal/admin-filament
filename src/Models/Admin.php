@@ -2,17 +2,11 @@
 
 namespace NinjaPortal\Admin\Models;
 
-use Althinect\FilamentSpatieRolesPermissions\Concerns\HasSuperAdmin;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
+use Filament\Models\Contracts\FilamentUser;
+use NinjaPortal\FilamentShield\Traits\HasPanelShield;
+use NinjaPortal\Portal\Models\Admin as BaseAdmin;
 
-class Admin extends Authenticatable
+class Admin extends BaseAdmin implements FilamentUser
 {
-    use HasSuperAdmin, HasRoles;
-
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    use HasPanelShield;
 }

@@ -5,31 +5,26 @@ namespace NinjaPortal\Admin;
 use Filament\Contracts\Plugin;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
-use NinjaPortal\Admin\Pages\MenuManager;
-use NinjaPortal\Admin\Resources\AdminResource;
-use NinjaPortal\Admin\Resources\ApiProductResource;
-use NinjaPortal\Admin\Resources\AudienceResource;
-use NinjaPortal\Admin\Resources\CategoryResource;
-use NinjaPortal\Admin\Resources\SettingGroupResource;
-use NinjaPortal\Admin\Resources\UserResource;
+use NinjaPortal\FilamentShield\FilamentShieldPlugin;
 use NinjaPortal\FilamentTranslations\NinjaFilamentTranslatablePlugin;
 
 class NinjaAdminPlugin implements Plugin
 {
 
     protected array $resources = [
-        AdminResource::class,
-        AudienceResource::class,
-        CategoryResource::class,
-        ApiProductResource::class,
-        UserResource::class,
-        SettingGroupResource::class
+        Resources\AdminResource::class,
+        Resources\AudienceResource::class,
+        Resources\CategoryResource::class,
+        Resources\ApiProductResource::class,
+        Resources\UserResource::class,
+        Resources\SettingGroupResource::class
     ];
 
     protected array $widgets = [];
 
     protected array $pages = [
-        MenuManager::class,
+        Pages\MenuManager::class,
+        Pages\Dashboard::class,
     ];
 
     public function getId(): string
@@ -42,15 +37,15 @@ class NinjaAdminPlugin implements Plugin
         $panel->widgets($this->widgets)
             ->pages($this->pages)
             ->plugins([
-            NinjaFilamentTranslatablePlugin::make()
-                ->defaultLocales(['en', 'ar']),
-        ])->navigationGroups($this->getNavigationGroups());
+                FilamentShieldPlugin::make(),
+                NinjaFilamentTranslatablePlugin::make()
+                    ->defaultLocales(['en', 'ar']),
+            ])->navigationGroups($this->getNavigationGroups());
         $this->registerResources($panel);
     }
 
     public function boot(Panel $panel): void
     {
-
     }
 
 
@@ -60,13 +55,15 @@ class NinjaAdminPlugin implements Plugin
     }
 
 
-    protected function getNavigationGroups()
+    protected function getNavigationGroups(): array
     {
         $groups = [];
         foreach (Constants::NAVIGATION_GROUPS as $key => $value) {
-            $groups[$key] = NavigationGroup::make($key)
-                ->label(__($value));
+            $groups[$key] = NavigationGroup::make()
+                ->label(fn () :string => __("ninjaadmin::ninjaadmin.navigation_groups.$value"));
         }
+
+        FilamentShieldPlugin::setNavigationGroup('ninjaadmin::ninjaadmin.navigation_groups.admin');
         return $groups;
     }
 
@@ -99,7 +96,6 @@ class NinjaAdminPlugin implements Plugin
             return empty($check);
         });
     }
-
 
 
 }

@@ -13,6 +13,7 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
     {
         $package->name('ninjaadmin')
             ->runsMigrations()
+            ->hasTranslations()
             ->hasViews();
     }
 

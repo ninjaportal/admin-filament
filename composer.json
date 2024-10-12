@@ -18,13 +18,12 @@
     ],
     "require": {
         "php": "^8.2",
-        "spatie/laravel-package-tools": "^1.16.3",
+        "filament/filament": "^3.2",
+        "spatie/laravel-package-tools": "^1.9",
         "illuminate/contracts": "^11.0",
         "guzzlehttp/guzzle": "^7.2",
         "nesbot/carbon": "^2.0",
-        "blade-ui-kit/blade-heroicons": "2.3.0",
-        "spatie/laravel-permission": "6.9.0",
-        "althinect/filament-spatie-roles-permissions": "v2.2.28"
+        "blade-ui-kit/blade-heroicons": "2.3.0"
     },
     "require-dev": {
 

@@ -69,7 +69,11 @@ class UserResource extends Resource
                         ->colors([
                             User::$ACTIVE_STATUS => 'success',
                             User::$INACTIVE_STATUS => 'danger',
-                        ]),
+                        ])->columnSpan(1),
+                    TextInput::make('apigee_id')
+                        ->label(__('Apigee ID'))
+                        ->disabled()
+                        ->columnSpan(1),
                 ])->columns(2),
                 Section::make()->schema([
                     Select::make('audiences')
@@ -141,6 +145,6 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __(Constants::NAVIGATION_GROUPS['USER']);
+        return __("ninjaadmin::ninjaadmin.navigation_groups.".Constants::NAVIGATION_GROUPS['USER']);
     }
 }

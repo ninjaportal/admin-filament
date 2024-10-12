@@ -6,7 +6,7 @@ class Constants {
 
     const NAVIGATION_GROUPS = [
         'CONTENT' => 'content',
-        'USER' => 'user',
+        'USER' => 'users',
         'GENERAL' => 'general',
         'ADMIN' => 'admin',
     ];

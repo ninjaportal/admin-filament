@@ -15,7 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 use NinjaPortal\Admin\Constants;
-use NinjaPortal\Admin\Models\Admin;
+use NinjaPortal\Portal\Models\Admin;
 use NinjaPortal\Admin\Resources\AdminResource\Pages;
 
 class AdminResource extends Resource
@@ -45,6 +45,11 @@ class AdminResource extends Resource
                         ->dehydrated(fn($state) => filled($state))
                         ->formatStateUsing(fn() => null)
                         ->required(fn(string $context): bool => $context === 'create'),
+                    Select::make('roles')
+                        ->relationship('roles', 'name')
+                        ->preload()
+                        ->multiple()
+                        ->searchable()
                 ])->columns(2)
             ]);
     }
@@ -94,16 +99,17 @@ class AdminResource extends Resource
 
     public static function getLabel(): ?string
     {
-        return __('ninja-admin.admins');
+        return __('ninjaadmin::ninjaadmin.admins');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('ninja-admin.admins');
+        return __('ninjaadmin::ninjaadmin.admins');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __(Constants::NAVIGATION_GROUPS['ADMIN']);
+        return __("ninjaadmin::ninjaadmin.navigation_groups.".Constants::NAVIGATION_GROUPS['ADMIN']);
     }
+
 }
