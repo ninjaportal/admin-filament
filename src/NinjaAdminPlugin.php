@@ -17,7 +17,8 @@ class NinjaAdminPlugin implements Plugin
         Resources\CategoryResource::class,
         Resources\ApiProductResource::class,
         Resources\UserResource::class,
-        Resources\SettingGroupResource::class
+        Resources\SettingGroupResource::class,
+        Resources\MenuResource::class
     ];
 
     protected array $widgets = [
@@ -26,7 +27,6 @@ class NinjaAdminPlugin implements Plugin
     ];
 
     protected array $pages = [
-        Pages\MenuManager::class,
         Pages\Dashboard::class,
     ];
 
@@ -39,10 +39,11 @@ class NinjaAdminPlugin implements Plugin
     {
         $panel->widgets($this->widgets)
             ->pages($this->pages)
+            ->topNavigation()
             ->plugins([
                 FilamentShieldPlugin::make(),
                 NinjaFilamentTranslatablePlugin::make()
-                    ->defaultLocales(['en', 'ar']),
+                    ->defaultLocales(config('ninjaadmin.locales',['en'])),
             ])->navigationGroups($this->getNavigationGroups());
         $this->registerResources($panel);
     }
