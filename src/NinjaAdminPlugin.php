@@ -23,7 +23,7 @@ class NinjaAdminPlugin implements Plugin
 
     protected array $widgets = [
         Widgets\OverviewWidget::class,
-        Widgets\UsersWidgetTable::class,
+        Widgets\UsersWidgetTable::class
     ];
 
     protected array $pages = [
@@ -43,7 +43,7 @@ class NinjaAdminPlugin implements Plugin
             ->plugins([
                 FilamentShieldPlugin::make(),
                 NinjaFilamentTranslatablePlugin::make()
-                    ->defaultLocales(config('ninjaadmin.locales',['en'])),
+                    ->defaultLocales(config('ninjaadmin.locales', ['en'])),
             ])->navigationGroups($this->getNavigationGroups());
         $this->registerResources($panel);
     }
@@ -64,7 +64,7 @@ class NinjaAdminPlugin implements Plugin
         $groups = [];
         foreach (Constants::NAVIGATION_GROUPS as $key => $value) {
             $groups[$key] = NavigationGroup::make()
-                ->label(fn () :string => __("ninjaadmin::ninjaadmin.navigation_groups.$value"));
+                ->label(fn(): string => __("ninjaadmin::ninjaadmin.navigation_groups.$value"));
         }
 
         FilamentShieldPlugin::setNavigationGroup('ninjaadmin::ninjaadmin.navigation_groups.admin');
