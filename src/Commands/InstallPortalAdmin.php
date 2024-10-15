@@ -2,13 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Filament\Facades\Filament;
 use Filament\PanelProvider;
 use Filament\Support\Commands\Concerns\CanGeneratePanels;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
-use ReflectionClass;
+use function Laravel\Prompts\select;
 
 class InstallPortalAdmin extends Command
 {
@@ -20,6 +19,22 @@ class InstallPortalAdmin extends Command
     public function handle(): void
     {
         $this->info('Starting the Portal Admin installation process.');
+
+        $adminType = select(
+            'Which type of Admin would you like to install?',
+            [
+                '0' => 'Filament (Web Interface)',
+                '1' => 'API (Backend Interface)',
+                '2' => 'Both (Filament + API)',
+            ],
+            'Filament (Web Interface)'
+        );
+
+
+        if ($adminType !== 'Filament (Web Interface)') {
+            $this->error('Only Filament Admin is supported at the moment.');
+            return;
+        }
 
         // Verify Filament Admin dependency
         if (!class_exists(PanelProvider::class)) {
