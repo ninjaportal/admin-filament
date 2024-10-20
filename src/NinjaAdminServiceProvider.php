@@ -14,6 +14,7 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
     {
         $package->name('ninjaadmin')
             ->runsMigrations()
+            ->hasConfigFile()
             ->hasTranslations()
             ->hasCommands([
                 InstallCommand::class

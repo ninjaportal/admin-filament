@@ -26,7 +26,7 @@ use NinjaPortal\Portal\Models\ApiProduct;
 use NinjaPortal\Portal\Models\Audience;
 use NinjaPortal\Portal\Models\Category;
 use NinjaPortal\Portal\Services\ApiProductService;
-use NinjaPortal\Portal\Services\IService;
+use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 
 class ApiProductResource extends Resource
 {
@@ -152,7 +152,7 @@ class ApiProductResource extends Resource
     }
 
 
-    public static function service(): IService
+    public static function service(): ServiceInterface
     {
         return new ApiProductService();
     }

@@ -21,7 +21,7 @@ use NinjaPortal\Admin\Resources\CategoryResource\Pages;
 use NinjaPortal\FilamentTranslations\Resources\Concerns\Translatable;
 use NinjaPortal\Portal\Models\Category;
 use NinjaPortal\Portal\Services\CategoryService;
-use NinjaPortal\Portal\Services\IService;
+use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 
 class CategoryResource extends Resource
 {
@@ -111,7 +111,7 @@ class CategoryResource extends Resource
         return __("Categories");
     }
 
-    public static function service(): IService
+    public static function service(): ServiceInterface
     {
         return new CategoryService();
     }

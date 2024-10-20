@@ -2,6 +2,7 @@
 
 namespace NinjaPortal\Admin\Resources;
 
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -21,7 +22,7 @@ use NinjaPortal\Admin\Concerns\HasNinjaService;
 use NinjaPortal\Admin\Constants;
 use NinjaPortal\Admin\Resources\UserResource\Pages;
 use NinjaPortal\Portal\Models\User;
-use NinjaPortal\Portal\Services\IService;
+use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 use NinjaPortal\Portal\Services\UserService;
 
 class UserResource extends Resource
@@ -60,20 +61,30 @@ class UserResource extends Resource
                         ->dehydrated(fn($state) => filled($state))
                         ->formatStateUsing(fn() => null)
                         ->required(fn(string $context): bool => $context === 'create'),
-                    ToggleButtons::make('status')
-                        ->inline()
-                        ->options([
-                            User::$ACTIVE_STATUS => __('Active'),
-                            User::$INACTIVE_STATUS => __('Inactive'),
-                        ])
-                        ->colors([
-                            User::$ACTIVE_STATUS => 'success',
-                            User::$INACTIVE_STATUS => 'danger',
-                        ])->columnSpan(1),
-                    TextInput::make('apigee_id')
-                        ->label(__('Apigee ID'))
-                        ->disabled()
-                        ->columnSpan(1),
+                    Group::make()->schema([
+                        ToggleButtons::make('status')
+                            ->inline()
+                            ->options([
+                                User::$ACTIVE_STATUS => __('Active'),
+                                User::$INACTIVE_STATUS => __('Inactive'),
+                            ])
+                            ->colors([
+                                User::$ACTIVE_STATUS => 'success',
+                                User::$INACTIVE_STATUS => 'danger',
+                            ])->columnSpan(1),
+                        ToggleButtons::make('sync_with_apigee')
+                            ->label(__('Is Synced with Apigee'))
+                            ->inline()
+                            ->disabled()
+                            ->options([
+                                true => __('Yes'),
+                                false => __('No'),
+                            ])
+                            ->colors([
+                                true => 'success',
+                                false => 'danger',
+                            ])->columnSpan(1),
+                    ])->columns(2)
                 ])->columns(2),
                 Section::make()->schema([
                     Select::make('audiences')
@@ -96,6 +107,14 @@ class UserResource extends Resource
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('sync_with_apigee')
+                    ->label(__('Synced with Apigee'))
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ? 'Yes' : 'No')
+                    ->colors([
+                        true => 'success',
+                        false => 'danger',
+                    ]),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -138,7 +157,7 @@ class UserResource extends Resource
         return ['email'];
     }
 
-    public static function service(): IService
+    public static function service(): ServiceInterface
     {
         return new UserService();
     }
