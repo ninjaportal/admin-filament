@@ -65,9 +65,9 @@ class ApiProductResource extends Resource
                         ->label(__('Swagger URL'))
                         ->disk(ApiProduct::$STORAGE_DISK)
                         ->acceptedFileTypes([
-                            'application/json', 'application/yaml', 'application/x-yaml', 'application/x-yml', 'text/yaml', 'text/x-yaml', 'text/x-yml'
-                        ])
-                        ->required(),
+                            'application/json',
+                            'application/yaml',
+                        ]),
                 ]),
                 Section::make()->schema([
                     Select::make('apigee_product_id')
