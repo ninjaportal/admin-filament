@@ -26,7 +26,7 @@ use NinjaPortal\Portal\Models\ApiProduct;
 use NinjaPortal\Portal\Models\Audience;
 use NinjaPortal\Portal\Models\Category;
 use NinjaPortal\Portal\Services\ApiProductService;
-use NinjaPortal\Portal\Services\IService;
+use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 
 class ApiProductResource extends Resource
 {
@@ -65,9 +65,9 @@ class ApiProductResource extends Resource
                         ->label(__('Swagger URL'))
                         ->disk(ApiProduct::$STORAGE_DISK)
                         ->acceptedFileTypes([
-                            'application/json', 'application/yaml', 'application/x-yaml', 'application/x-yml', 'text/yaml', 'text/x-yaml', 'text/x-yml'
-                        ])
-                        ->required(),
+                            'application/json',
+                            'application/yaml',
+                        ]),
                 ]),
                 Section::make()->schema([
                     Select::make('apigee_product_id')
@@ -152,7 +152,7 @@ class ApiProductResource extends Resource
     }
 
 
-    public static function service(): IService
+    public static function service(): ServiceInterface
     {
         return new ApiProductService();
     }

@@ -5,45 +5,25 @@ namespace NinjaPortal\Admin\Resources\UserResource\Pages;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Actions\Action as FormAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\{Action as FormAction, DatePicker, Grid, Placeholder, Repeater, Section, Select, Textarea, TextInput, Toggle, ToggleButtons};
 use Filament\Forms\Contracts\HasForms;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\Log;
-use Livewire\Component;
 use NinjaPortal\Admin\Resources\UserResource;
-use NinjaPortal\Portal\Services\ApiProductService;
-use NinjaPortal\Portal\Services\UserAppCredentialService;
-use NinjaPortal\Portal\Services\UserAppService;
+use NinjaPortal\Portal\Services\{ApiProductService, UserAppCredentialService, UserAppService};
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class UserAppsPage extends Page implements HasForms, HasActions
 {
-
     const APPROVED_STATUS = 'approved';
     const REVOKED_STATUS = 'revoked';
 
     use InteractsWithRecord;
 
-    protected $listeners = [
-        'refreshComponent' => '$refresh'
-    ];
-
+    protected $listeners = ['refreshComponent' => '$refresh'];
 
     public Collection|array $apis;
 
@@ -55,17 +35,50 @@ class UserAppsPage extends Page implements HasForms, HasActions
 
     public static string $resource = UserResource::class;
 
-    protected UserAppService $userAppService;
-    protected UserAppCredentialService $userAppCredentialService;
+    /**
+     * Retrieve the current admin's email.
+     *
+     * @return string|null
+     */
+    protected function getAdminEmail(): ?string
+    {
+        return auth()->user()->email; // Adjust this based on your authentication guard
+    }
 
     public function mount(int|string $record): void
     {
-        $this->apis = collect((new ApiProductService())->apigeeProducts()) // todo: deek the services
-            ->mapWithKeys(fn($p) => [$p->getName() => $p->getName()]);
         $this->record = $this->resolveRecord($record);
-        $this->userAppService = new UserAppService($this->record->email);
-        $this->apps = collect($this->userAppService->all())->toArray();
-        $this->apps = Arr::map($this->apps, function ($app) {
+        $this->loadApiProducts();
+        $this->loadUserApps();
+    }
+
+    /**
+     * Load available API products.
+     */
+    protected function loadApiProducts(): void
+    {
+        $this->apis = collect((new ApiProductService())->apigeeProducts())
+            ->mapWithKeys(fn($p) => [$p->getName() => $p->getName()]);
+    }
+
+    /**
+     * Load and format apps for the user.
+     */
+    protected function loadUserApps(): void
+    {
+        $this->apps = $this->formatApps((new UserAppService())->all($this->record->email));
+    }
+
+    /**
+     * Format apps and their credentials for display.
+     *
+     * @param array $apps
+     * @return array
+     */
+    protected function formatApps(array $apps): array
+    {
+        return Arr::map($apps, function ($app) {
+            $app = $app->toArray();
             $app['createdAt'] = Carbon::createFromTimestampMs($app['createdAt'])->format("Y-m-d H:i:s");
             $app['credentials'] = Arr::map($app['credentials'], function ($credential) {
                 $credential['apiProducts'] = Arr::map($credential['apiProducts'], function ($apiProduct) {
@@ -76,9 +89,7 @@ class UserAppsPage extends Page implements HasForms, HasActions
             });
             return $app;
         });
-
     }
-
 
     public function manageAppAction(): Action
     {
@@ -94,11 +105,16 @@ class UserAppsPage extends Page implements HasForms, HasActions
             ->action(fn(array $arguments, $data) => $this->handleManageAppForm($arguments, $data));
     }
 
-    public function handleManageAppForm(array $arguments, array $data)
+    /**
+     * Handle app management form submission.
+     *
+     * @param array $arguments
+     * @param array $data
+     */
+    public function handleManageAppForm(array $arguments, array $data): void
     {
-        $this->userAppService = new UserAppService($this->record->email);
-
-        // handle app details
+        $adminEmail = $this->getAdminEmail();
+        $email = $this->record->email;
         $app = $arguments['app'];
 
         $appData = [
@@ -107,80 +123,180 @@ class UserAppsPage extends Page implements HasForms, HasActions
             'description' => $data['description'] ?? '',
         ];
 
-        $this->userAppCredentialService = $this->userAppService->credentialService($this->record->email, $app['name']);
+        try {
+            $credentials = collect($data['credentials']);
+            $oldCredentials = collect($app['credentials']);
 
-        $credentials = collect($data['credentials']);
-        $oldCredentials = collect($app['credentials']);
+            // Handle deleted credentials
+            $this->handleDeletedCredentials($email, $app['name'], $oldCredentials, $credentials, $adminEmail);
 
-        // handle deleted "credentials"
-        $deletedCredentials = $oldCredentials->whereNotIn('consumerKey', $credentials->pluck('consumerKey'))->pluck('consumerKey')->toArray();
+            // Handle updated credentials and products
+            $this->handleExistingCredentials($email, $app['name'], $credentials, $oldCredentials, $adminEmail);
 
-        if ($deletedCredentials){
-            foreach ($deletedCredentials as $consumerKey){
-                $this->userAppCredentialService->delete($consumerKey);
-                Log::info('Admin deleted credential: '.$consumerKey);
-            }
+            // Handle new credentials
+            $this->handleNewCredentials($email, $app['name'], $credentials, $adminEmail);
+
+            // Update app details
+            (new UserAppService())->update($email, $app['name'], $appData);
+
+            Log::info('App Updated', [
+                'action' => 'App Updated',
+                'admin' => $adminEmail,
+                'user' => $email,
+                'app' => $app['name']
+            ]);
+        } catch (\Exception $e) {
+            Log::error('App Update Failed', [
+                'action' => 'App Update Failed',
+                'admin' => $adminEmail,
+                'user' => $email,
+                'app' => $app['name'],
+                'error' => $e->getMessage()
+            ]);
+            $this->addError('error', $e->getMessage());
         }
 
-
-//        try {
-            // handle already existing "credentials
-            foreach ($credentials->whereNotNull('consumerKey') as $credential) {
-                $oldCredential = $oldCredentials->firstWhere('consumerKey', $credential['consumerKey']);
-
-                // handle apiProduct deletions
-                $deletedApiProducts = collect($oldCredential['apiProducts'])->whereNotIn('apiproduct', collect($credential['apiProducts'])->pluck('apiproduct'))->pluck('apiproduct')->toArray();
-
-
-                if ($deletedApiProducts){
-                    foreach ($deletedApiProducts as $apiProduct){
-                        $this->userAppCredentialService->removeProducts($credential['consumerKey'], $apiProduct);
-                    }
-                }
-
-
-
-                // handle credential statuses, if changed
-                if ($credential['status'] !== $oldCredential['status']) {
-                    $action = rtrim($credential['status'],'d'); // remove the last d from approved, revoked to match the method name
-                    $this->userAppCredentialService->{$action}($oldCredential['consumerKey']);
-                }
-
-                // handle api products
-                $apiProducts = $credential['apiProducts'];
-                $oldApiProducts = collect($oldCredential['apiProducts']);
-                foreach ($apiProducts as $apiProduct) {
-                    // handle api product statuses, if changed
-                    $oldApiProduct = $oldApiProducts->firstWhere('apiproduct', $apiProduct['apiproduct']);
-                    if ($oldApiProduct && $apiProduct['status'] !== $oldApiProduct['status']) {
-                        $action = rtrim($apiProduct['status'],'d'); // remove the last d from approved, revoked to match the method name
-                        $this->userAppCredentialService->{$action.'ApiProduct'}($oldCredential['consumerKey'], $apiProduct['apiproduct']);
-                    }
-                }
-
-                // handle new api products
-                $newApiProducts = collect($apiProducts)->where('old','!=',true)->pluck('apiproduct')->toArray();
-                if (count($newApiProducts)) {
-                    try {
-                        $this->userAppCredentialService->addProducts($oldCredential['consumerKey'], $newApiProducts);
-                    } catch (ExceptionInterface $e) {
-                        $this->addError('error', $e->getMessage());
-                    }
-                }
-            }
-
-            // handle new "credentials"
-            foreach ($credentials->whereNull('consumerKey') as $credential) {
-                $apps = collect($credential['apiProducts'])->pluck('apiproduct')->toArray();
-                $this->userAppCredentialService->create($apps);
-            }
-
-            // update "app" details
-            $this->userAppService->update($app['name'], $appData);
-//        }catch (\Exception $e){
-//            $this->addError('error', $e->getMessage());
-//        }
+        // Refresh component
         $this->mount($this->record->id);
+    }
+
+    /**
+     * Handle deletion of credentials.
+     *
+     * @param string $email
+     * @param string $appName
+     * @param Collection $oldCredentials
+     * @param Collection $newCredentials
+     * @param string $adminEmail
+     */
+    private function handleDeletedCredentials(string $email, string $appName, Collection $oldCredentials, Collection $newCredentials, string $adminEmail): void
+    {
+        $deletedCredentials = $oldCredentials->whereNotIn('consumerKey', $newCredentials->pluck('consumerKey'))->pluck('consumerKey')->toArray();
+
+        if (!empty($deletedCredentials)) {
+            $credentialService = new UserAppCredentialService();
+            foreach ($deletedCredentials as $consumerKey) {
+                $credentialService->delete($email, $appName, $consumerKey);
+                Log::info('Credential Deleted', [
+                    'action' => 'Credential Deleted',
+                    'admin' => $adminEmail,
+                    'user' => $email,
+                    'app' => $appName,
+                    'consumerKey' => $consumerKey
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Handle updating existing credentials and API products.
+     *
+     * @param string $email
+     * @param string $appName
+     * @param Collection $credentials
+     * @param Collection $oldCredentials
+     * @param string $adminEmail
+     */
+    private function handleExistingCredentials(string $email, string $appName, Collection $credentials, Collection $oldCredentials, string $adminEmail): void
+    {
+        $credentialService = new UserAppCredentialService();
+
+        foreach ($credentials->whereNotNull('consumerKey') as $credential) {
+            $oldCredential = $oldCredentials->firstWhere('consumerKey', $credential['consumerKey']);
+
+            // Handle API product deletions
+            $deletedApiProducts = collect($oldCredential['apiProducts'])
+                ->whereNotIn('apiproduct', collect($credential['apiProducts'])->pluck('apiproduct'))
+                ->pluck('apiproduct')->toArray();
+
+            foreach ($deletedApiProducts as $apiProduct) {
+                $credentialService->removeProducts($email, $appName, $credential['consumerKey'], $apiProduct);
+                Log::info('API Product Removed', [
+                    'action' => 'API Product Removed',
+                    'admin' => $adminEmail,
+                    'user' => $email,
+                    'app' => $appName,
+                    'consumerKey' => $credential['consumerKey'],
+                    'apiProduct' => $apiProduct
+                ]);
+            }
+
+            // Handle credential status changes
+            if ($credential['status'] !== $oldCredential['status']) {
+                $action = rtrim($credential['status'], 'd');
+                $credentialService->{$action}($email, $appName, $oldCredential['consumerKey']);
+                Log::info('Credential Status Changed', [
+                    'action' => 'Credential Status Changed',
+                    'admin' => $adminEmail,
+                    'user' => $email,
+                    'app' => $appName,
+                    'consumerKey' => $oldCredential['consumerKey'],
+                    'status' => $credential['status']
+                ]);
+            }
+
+            // Handle API product status changes
+            $this->handleApiProductStatusChanges($email, $appName, $credentialService, $credential, $oldCredential, $adminEmail);
+        }
+    }
+
+    /**
+     * Handle API product status changes.
+     *
+     * @param string $email
+     * @param string $appName
+     * @param UserAppCredentialService $credentialService
+     * @param array $credential
+     * @param array $oldCredential
+     * @param string $adminEmail
+     */
+    private function handleApiProductStatusChanges(string $email, string $appName, UserAppCredentialService $credentialService, array $credential, array $oldCredential, string $adminEmail): void
+    {
+        $apiProducts = $credential['apiProducts'];
+        $oldApiProducts = collect($oldCredential['apiProducts']);
+
+        foreach ($apiProducts as $apiProduct) {
+            $oldApiProduct = $oldApiProducts->firstWhere('apiproduct', $apiProduct['apiproduct']);
+
+            if ($oldApiProduct && $apiProduct['status'] !== $oldApiProduct['status']) {
+                $action = rtrim($apiProduct['status'], 'd');
+                $credentialService->{$action . 'ApiProduct'}($email, $appName, $oldCredential['consumerKey'], $apiProduct['apiproduct']);
+                Log::info('API Product Status Changed', [
+                    'action' => 'API Product Status Changed',
+                    'admin' => $adminEmail,
+                    'user' => $email,
+                    'app' => $appName,
+                    'consumerKey' => $oldCredential['consumerKey'],
+                    'apiProduct' => $apiProduct['apiproduct'],
+                    'status' => $apiProduct['status']
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Handle creation of new credentials.
+     *
+     * @param string $email
+     * @param string $appName
+     * @param Collection $credentials
+     * @param string $adminEmail
+     */
+    private function handleNewCredentials(string $email, string $appName, Collection $credentials, string $adminEmail): void
+    {
+        $credentialService = new UserAppCredentialService();
+
+        foreach ($credentials->whereNull('consumerKey') as $credential) {
+            $apiProducts = collect($credential['apiProducts'])->pluck('apiproduct')->toArray();
+            $credentialService->create($email, $appName, $apiProducts);
+            Log::info('New Credential Created', [
+                'action' => 'New Credential Created',
+                'admin' => $adminEmail,
+                'user' => $email,
+                'app' => $appName,
+                'apiProducts' => $apiProducts
+            ]);
+        }
     }
 
     public function manageAppForm(): array
@@ -189,7 +305,7 @@ class UserAppsPage extends Page implements HasForms, HasActions
             Section::make('App Details')
                 ->icon('heroicon-o-information-circle')
                 ->headerActions([
-                    FormAction::make('status')
+                    \Filament\Forms\Components\Actions\Action::make('status')
                         ->icon(fn($get) => $get('status') == self::APPROVED_STATUS ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                         ->color(fn($get) => $get('status') == self::APPROVED_STATUS ? 'success' : 'danger')
                         ->label(fn($get) => $get('status') == self::APPROVED_STATUS ? __('Approved') : __('Revoked'))
@@ -210,7 +326,7 @@ class UserAppsPage extends Page implements HasForms, HasActions
                         ->label(__('Callback URL'))->url(),
                     Textarea::make('description')
                         ->label(__('Description')),
-            ])->columns(1),
+                ])->columns(1),
 
             Section::make('Credentials')->schema([
                 Repeater::make('credentials')
@@ -273,48 +389,52 @@ class UserAppsPage extends Page implements HasForms, HasActions
                         Repeater::make('apiProducts')
                             ->minItems(1)
                             ->schema([
-                            Select::make('apiproduct')
-                                ->label(__('API Product'))
-                                ->selectablePlaceholder(false)
-                                ->options(fn($get) => $get('old')
-                                    ? [$get('apiproduct')]
-                                    : [null => __('Select API Product'), ...$this->apis->toArray()])
-                                ->required()
-                                ->hint(fn($get) => $get('old') ? NULL : __('Approved'))
-                                ->hintColor('success')
+                                Select::make('apiproduct')
+                                    ->label(__('API Product'))
+                                    ->selectablePlaceholder(false)
+                                    ->options(fn($get) => $get('old')
+                                        ? [$get('apiproduct')]
+                                        : [null => __('Select API Product'), ...$this->apis->toArray()])
+                                    ->required()
+                                    ->hint(fn($get) => $get('old') ? NULL : __('Approved'))
+                                    ->hintColor('success')
 //                                ->hint(fn($get) => $get('old') ? NULL : __('Pending'))
 //                                ->hintColor('info')
-                                ->columnSpan(fn($get) => $get('old') ? 3 : 5),
-                            // status
-                            ToggleButtons::make('status')
-                                ->inline()
-                                ->default(self::APPROVED_STATUS)
-                                ->hidden(fn($get) => !$get('old'))
-                                ->disabled(fn($get) => !$get('old'))
-                                ->icons([
-                                    self::APPROVED_STATUS => 'heroicon-o-check-circle',
-                                    self::REVOKED_STATUS => 'heroicon-o-x-circle',
-                                ])
-                                ->options([
-                                    self::APPROVED_STATUS => __('Approve'),
-                                    self::REVOKED_STATUS => __('Revoke'),
-                                ])->colors([
-                                    self::APPROVED_STATUS => 'success',
-                                    self::REVOKED_STATUS => 'danger',
-                                ])->required()->columnSpan(2),
-                        ])->columnSpan(5)->columns(5),
+                                    ->columnSpan(fn($get) => $get('old') ? 3 : 5),
+                                // status
+                                ToggleButtons::make('status')
+                                    ->inline()
+                                    ->default(self::APPROVED_STATUS)
+                                    ->hidden(fn($get) => !$get('old'))
+                                    ->disabled(fn($get) => !$get('old'))
+                                    ->icons([
+                                        self::APPROVED_STATUS => 'heroicon-o-check-circle',
+                                        self::REVOKED_STATUS => 'heroicon-o-x-circle',
+                                    ])
+                                    ->options([
+                                        self::APPROVED_STATUS => __('Approve'),
+                                        self::REVOKED_STATUS => __('Revoke'),
+                                    ])->colors([
+                                        self::APPROVED_STATUS => 'success',
+                                        self::REVOKED_STATUS => 'danger',
+                                    ])->required()->columnSpan(2),
+                            ])->columnSpan(5)->columns(5),
                     ])->columns(4),
             ])->icon('heroicon-o-key'),
         ];
     }
 
-    private function handleDeleteCredential(array $item,$appName): void
+    private function handleDeleteCredential(array $item, string $appName): void
     {
-        $this->userAppService = new UserAppService($this->record->email);
-        $this->userAppCredentialService = $this->userAppService->credentialService($this->record->email, $appName);
-        $this->userAppCredentialService->delete($item['consumerKey']);
+        $adminEmail = $this->getAdminEmail();
+        (new UserAppCredentialService())->delete($this->record->email, $appName, $item['consumerKey']);
+        Log::info('Credential Deleted via Form', [
+            'action' => 'Credential Deleted via Form',
+            'admin' => $adminEmail,
+            'user' => $this->record->email,
+            'app' => $appName,
+            'consumerKey' => $item['consumerKey']
+        ]);
         $this->mount($this->record->id);
     }
-
-
 }

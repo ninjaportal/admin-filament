@@ -3,6 +3,7 @@
 namespace NinjaPortal\Admin;
 
 use Illuminate\Support\Facades\Config;
+use NinjaPortal\Admin\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -13,7 +14,11 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
     {
         $package->name('ninjaadmin')
             ->runsMigrations()
+            ->hasConfigFile()
             ->hasTranslations()
+            ->hasCommands([
+                InstallCommand::class
+            ])
             ->hasViews();
     }
 

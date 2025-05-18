@@ -45,7 +45,7 @@ class SettingsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('type'),
                 Tables\Columns\TextColumn::make('value')
                     ->getStateUsing(function ($record) {
-                        return is_null($record->value) ? config($record->key) : $value;
+                        return $record->value ?? config($record->key);
                     }),
             ])
             ->filters([

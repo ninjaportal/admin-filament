@@ -17,7 +17,7 @@ use NinjaPortal\Admin\Constants;
 use NinjaPortal\Admin\Resources\AudienceResource\Pages;
 use NinjaPortal\Portal\Models\Audience;
 use NinjaPortal\Portal\Services\AudienceService;
-use NinjaPortal\Portal\Services\IService;
+use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 
 class AudienceResource extends Resource
 {
@@ -93,7 +93,7 @@ class AudienceResource extends Resource
         return ['name'];
     }
 
-    public static function service(): IService
+    public static function service(): ServiceInterface
     {
         return new AudienceService();
     }
