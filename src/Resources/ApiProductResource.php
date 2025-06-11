@@ -40,6 +40,10 @@ class ApiProductResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $products = cache()->remember('apigee:products', now()->addDay(), function () {
+            return (new ApiProductService())->apigeeProducts();
+        });
+        $products = collect($products)->mapWithKeys(fn($p) => [$p->getName() => $p->getName()]);
         return $form
             ->schema([
                 Section::make()->schema([
@@ -71,8 +75,8 @@ class ApiProductResource extends Resource
                 ]),
                 Section::make()->schema([
                     Select::make('apigee_product_id')
-                        ->options(fn() => collect((new ApiProductService())->apigeeProducts())
-                            ->mapWithKeys(fn($p) => [$p->getName() => $p->getName()]))
+                        ->label(__('Apigee Product'))
+                        ->options(fn() => $products)
                         ->searchable(),
                     Select::make('visibility')
                         ->label(__('Visibility'))

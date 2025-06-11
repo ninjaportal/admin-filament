@@ -10,7 +10,6 @@ use NinjaPortal\FilamentTranslations\NinjaFilamentTranslatablePlugin;
 
 class NinjaAdminPlugin implements Plugin
 {
-
     protected array $resources = [
         Resources\AdminResource::class,
         Resources\AudienceResource::class,
@@ -18,12 +17,12 @@ class NinjaAdminPlugin implements Plugin
         Resources\ApiProductResource::class,
         Resources\UserResource::class,
         Resources\SettingGroupResource::class,
-        Resources\MenuResource::class
+        Resources\MenuResource::class,
     ];
 
     protected array $widgets = [
         Widgets\OverviewWidget::class,
-        Widgets\UsersWidgetTable::class
+        Widgets\UsersWidgetTable::class,
     ];
 
     protected array $pages = [
@@ -37,69 +36,102 @@ class NinjaAdminPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $panel->widgets($this->widgets)
-            ->pages($this->pages)
+        // Register widgets, pages, resources with extension support
+        $this->registerWidgets($panel);
+        $this->registerPages($panel);
+        $this->registerResources($panel);
+
+        // Core panel setup
+        $panel
             ->topNavigation()
             ->plugins([
                 FilamentShieldPlugin::make(),
                 NinjaFilamentTranslatablePlugin::make()
                     ->defaultLocales(config('ninjaadmin.locales', ['en'])),
-            ])->navigationGroups($this->getNavigationGroups());
-        $this->registerResources($panel);
+            ])
+            ->navigationGroups($this->getNavigationGroups());
     }
 
     public function boot(Panel $panel): void
     {
+        // Boot logic if needed
     }
-
 
     public static function make(): static
     {
         return app(static::class);
     }
 
-
     protected function getNavigationGroups(): array
     {
         $groups = [];
+
         foreach (Constants::NAVIGATION_GROUPS as $key => $value) {
             $groups[$key] = NavigationGroup::make()
                 ->label(fn(): string => __("ninjaadmin::ninjaadmin.navigation_groups.$value"));
         }
 
         FilamentShieldPlugin::setNavigationGroup('ninjaadmin::ninjaadmin.navigation_groups.admin');
+
         return $groups;
     }
 
     protected function registerResources(Panel $panel): void
     {
-        $resources = $this->resources;
-        $appNamespace = app()->getNamespace();
         $namespace = __NAMESPACE__ . '\Resources';
-        $registeredResources = $panel->getResources();
-        $unregisteredResources = $this->filterUnregistered($resources, $registeredResources, $namespace, $appNamespace);
-        $panel->resources($unregisteredResources);
+        $registered = $panel->getResources();
+        $toRegister = $this->filterUnregistered($this->resources, $registered, $namespace, app()->getNamespace());
+
+        if (! empty($toRegister)) {
+            $panel->resources($toRegister);
+        }
+    }
+
+    protected function registerPages(Panel $panel): void
+    {
+        $namespace = __NAMESPACE__ . '\Pages';
+        $registered = $panel->getPages();
+        $toRegister = $this->filterUnregistered($this->pages, $registered, $namespace, app()->getNamespace());
+
+        if (! empty($toRegister)) {
+            $panel->pages($toRegister);
+        }
+    }
+
+    protected function registerWidgets(Panel $panel): void
+    {
+        $namespace = __NAMESPACE__ . '\Widgets';
+        $registered = $panel->getWidgets();
+        $toRegister = $this->filterUnregistered($this->widgets, $registered, $namespace, app()->getNamespace());
+
+        if (! empty($toRegister)) {
+            $panel->widgets($toRegister);
+        }
     }
 
     /**
-     * Filters unregistered items by comparing transformed names.
+     * Filters unregistered items by comparing class names without base namespaces.
      *
-     * @param array $items Items to register.
-     * @param array $registeredItems Items already registered.
-     * @param string $namespace The namespace to replace in items.
-     * @param string $appNamespace The namespace to replace in registered items.
-     * @return array The filtered list of items to register.
+     * @param string[] $items
+     * @param string[] $registeredItems
+     * @param string   $itemNamespace
+     * @param string   $appNamespace
+     * @return string[]
      */
-    protected function filterUnregistered(array $items, array $registeredItems, string $namespace, string $appNamespace): array
+    protected function filterUnregistered(array $items, array $registeredItems, string $itemNamespace, string $appNamespace): array
     {
-        return array_filter($items, function ($item) use ($registeredItems, $namespace, $appNamespace) {
-            $itemName = str($item)->replace($namespace, '')->toString();
-            $check = array_filter($registeredItems, function ($registeredItem) use ($itemName, $appNamespace) {
-                return str($registeredItem)->replace($appNamespace, '')->toString() === $itemName;
+        return array_filter($items, function ($item) use ($registeredItems, $itemNamespace, $appNamespace) {
+            $itemName = str($item)
+                ->replace($itemNamespace, '')
+                ->toString();
+
+            $found = array_filter($registeredItems, function ($registered) use ($itemName, $appNamespace) {
+                return str($registered)
+                    ->replace($appNamespace, '')
+                    ->endsWith($itemName);
             });
-            return empty($check);
+
+            return empty($found);
         });
     }
-
-
 }
