@@ -41,6 +41,8 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
             'driver' => 'session',
             'provider' => 'admin',
         ]);
+
+        Config::set("ninjaadmin.locales", config('ninjaportal.locales', ['en' => "English"]));
     }
 
 
