@@ -11,13 +11,12 @@ use NinjaPortal\FilamentTranslations\NinjaFilamentTranslatablePlugin;
 class NinjaAdminPlugin implements Plugin
 {
     protected array $resources = [
-        Resources\AdminResource::class,
-        Resources\AudienceResource::class,
-        Resources\CategoryResource::class,
-        Resources\ApiProductResource::class,
-        Resources\UserResource::class,
-        Resources\SettingGroupResource::class,
-        Resources\MenuResource::class,
+        Resources\Audience\AudienceResource::class,
+        Resources\Category\CategoryResource::class,
+        Resources\ApiProduct\ApiProductResource::class,
+        Resources\User\UserResource::class,
+        Resources\SettingGroup\SettingGroupResource::class,
+        Resources\Menu\MenuResource::class,
     ];
 
     protected array $widgets = [
@@ -47,7 +46,7 @@ class NinjaAdminPlugin implements Plugin
             ->plugins([
                 FilamentShieldPlugin::make(),
                 NinjaFilamentTranslatablePlugin::make()
-                    ->defaultLocales(config('ninjaadmin.locales', ['en'])),
+                    ->defaultLocales(array_keys(config('ninjaportal.locales'))),
             ])
             ->navigationGroups($this->getNavigationGroups());
     }
@@ -81,7 +80,6 @@ class NinjaAdminPlugin implements Plugin
         $namespace = __NAMESPACE__ . '\Resources';
         $registered = $panel->getResources();
         $toRegister = $this->filterUnregistered($this->resources, $registered, $namespace, app()->getNamespace());
-
         if (! empty($toRegister)) {
             $panel->resources($toRegister);
         }
@@ -121,6 +119,9 @@ class NinjaAdminPlugin implements Plugin
     protected function filterUnregistered(array $items, array $registeredItems, string $itemNamespace, string $appNamespace): array
     {
         return array_filter($items, function ($item) use ($registeredItems, $itemNamespace, $appNamespace) {
+            if (class_exists($item) === false) {
+                return false;
+            }
             $itemName = str($item)
                 ->replace($itemNamespace, '')
                 ->toString();

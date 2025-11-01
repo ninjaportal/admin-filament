@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Console\Commands;
+namespace NinjaPortal\Admin\Commands;
 
+use Exception;
 use Filament\PanelProvider;
 use Filament\Support\Commands\Concerns\CanGeneratePanels;
 use Illuminate\Console\Command;
@@ -71,7 +72,7 @@ class InstallPortalAdmin extends Command
                 '--no-interaction' => true
             ]);
             $this->info('Migration files published successfully.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to publish migration files: ' . $e->getMessage());
         }
     }
@@ -81,7 +82,7 @@ class InstallPortalAdmin extends Command
         try {
             Artisan::call('migrate');
             $this->info('Migrations ran successfully.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Migration failed: ' . $e->getMessage());
         }
     }
@@ -116,7 +117,7 @@ class InstallPortalAdmin extends Command
             }
 
             $this->info('Stub files created and modified successfully.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to create stub files: ' . $e->getMessage());
         }
     }

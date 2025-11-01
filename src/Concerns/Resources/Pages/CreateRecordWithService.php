@@ -2,15 +2,14 @@
 
 namespace NinjaPortal\Admin\Concerns\Resources\Pages;
 
+use Illuminate\Database\Eloquent\Model;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
-use NinjaPortal\FilamentTranslations\Resources\Pages\CreateRecord\Concerns\Translatable;
-use NinjaPortal\Portal\Translatable\Locales;
 
 class CreateRecordWithService extends CreateRecord
 {
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $record = self::getResource()::service()->create($data);
 
