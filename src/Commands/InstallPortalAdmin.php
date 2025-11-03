@@ -52,10 +52,7 @@ class InstallPortalAdmin extends Command
 
         $this->createStubs();
 
-        if (!$this->generatePanel(default: 'admin')) {
-            $this->error('Failed to generate the admin panel.');
-            return;
-        }
+        $this->generatePanel(id: "admin");
 
         $this->publishMigrationFiles();
         $this->runMigrations();

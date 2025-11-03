@@ -20,8 +20,8 @@ class NinjaAdminPlugin implements Plugin
     ];
 
     protected array $widgets = [
-        Widgets\OverviewWidget::class,
-        Widgets\UsersWidgetTable::class,
+//        Widgets\OverviewWidget::class,
+//        Widgets\UsersWidgetTable::class,
     ];
 
     protected array $pages = [
@@ -69,9 +69,7 @@ class NinjaAdminPlugin implements Plugin
             $groups[$key] = NavigationGroup::make()
                 ->label(fn(): string => __("ninjaadmin::ninjaadmin.navigation_groups.$value"));
         }
-
         FilamentShieldPlugin::setNavigationGroup('ninjaadmin::ninjaadmin.navigation_groups.admin');
-
         return $groups;
     }
 

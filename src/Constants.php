@@ -9,6 +9,7 @@ class Constants {
         'USER' => 'users',
         'GENERAL' => 'general',
         'ADMIN' => 'admin',
+        'MONETIZATION' => 'monetization',
     ];
 
     const SETTING_TYPES = [
