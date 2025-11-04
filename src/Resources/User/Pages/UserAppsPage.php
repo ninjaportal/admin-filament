@@ -2,6 +2,8 @@
 
 namespace NinjaPortal\Admin\Resources\User\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Support\ArrayRecord;
 use Carbon\Carbon;
 use Exception;
 use Filament\Actions\Action;
@@ -111,7 +113,7 @@ class UserAppsPage extends Page implements HasActions, HasTable, HasSchemas
                 ->icon('heroicon-o-plus')
                 ->modalWidth(Width::FiveExtraLarge)
                 ->modalSubmitActionLabel(__('Create'))
-                ->mountUsing(function (Action $action, ?\Filament\Schemas\Schema $schema): void {
+                ->mountUsing(function (Action $action, ?Schema $schema): void {
                     $this->ensureApiProductsLoaded();
 
                     $schema?->fill($this->getEmptyAppData());
@@ -142,7 +144,7 @@ class UserAppsPage extends Page implements HasActions, HasTable, HasSchemas
             ->slideOver()
             ->modalWidth(Width::FiveExtraLarge)
             ->modalSubmitActionLabel(__('Save'))
-            ->mountUsing(function (Action $action, ?\Filament\Schemas\Schema $schema): void {
+            ->mountUsing(function (Action $action, ?Schema $schema): void {
                 $this->ensureApiProductsLoaded();
 
                 $record = $action->getRecord();
@@ -604,7 +606,7 @@ class UserAppsPage extends Page implements HasActions, HasTable, HasSchemas
                 ->unique()
                 ->values()
                 ->toArray();
-            $app[\Filament\Support\ArrayRecord::getKeyName()] = $app['name'];
+            $app[ArrayRecord::getKeyName()] = $app['name'];
             $app['status'] = $app['status'] ?? self::APPROVED_STATUS;
             return [$app['name'] => $app];
         })->toArray();

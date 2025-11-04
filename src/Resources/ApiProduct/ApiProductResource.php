@@ -7,7 +7,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use NinjaPortal\Admin\Concerns\HasNinjaService;
 use NinjaPortal\Admin\Constants;
-use NinjaPortal\Admin\Resources\ApiProduct\Pages;
 use NinjaPortal\Admin\Resources\ApiProduct\Pages\CreateApiProduct;
 use NinjaPortal\Admin\Resources\ApiProduct\Pages\EditApiProduct;
 use NinjaPortal\Admin\Resources\ApiProduct\Pages\ListApiProducts;

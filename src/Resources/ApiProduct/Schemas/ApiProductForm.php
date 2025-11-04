@@ -24,7 +24,7 @@ class ApiProductForm
                     TextInput::make('name')
                         ->label(__('Name'))
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn ($get, $set) => $set('slug', str()->slug($get('name'))))
+                        ->afterStateUpdated(fn ($get, $set, string $operation) => $operation === 'create' ? $set('slug', str()->slug($get('name'))) : null)
                         ->required(),
                     TextInput::make('slug')
                         ->disabled(fn ($record) => $record && $record->exists)
@@ -38,6 +38,7 @@ class ApiProductForm
                         ->label(__('Description')),
                     FileUpload::make('thumbnail')
                         ->label(__('Thumbnail'))
+                        ->disk(ApiProduct::$STORAGE_DISK)
                         ->image(),
                     FileUpload::make('swagger_url')
                         ->label(__('Swagger URL'))

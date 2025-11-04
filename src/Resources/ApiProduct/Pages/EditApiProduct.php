@@ -11,11 +11,9 @@ use NinjaPortal\FilamentTranslations\Resources\Pages\EditRecord\Concerns\Transla
 
 class EditApiProduct extends EditRecordWithService
 {
-
     use Translatable;
 
     protected static string $resource = ApiProductResource::class;
-
     protected function getHeaderActions(): array
     {
         return [

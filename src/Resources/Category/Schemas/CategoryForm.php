@@ -29,12 +29,12 @@ class CategoryForm
                     ->rows(3),
                 RichEditor::make('description')
                     ->label(__('Description'))
-            ]),
+            ])->columnSpan(2),
             Section::make()->schema([
                 FileUpload::make('thumbnail')
                     ->label(__('Thumbnail'))
                     ->image(),
-            ])
+            ]),
         ])->columns(3);
     }
 }
