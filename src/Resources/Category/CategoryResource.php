@@ -14,6 +14,7 @@ use NinjaPortal\Admin\Resources\Category\Schemas\CategoryForm;
 use NinjaPortal\Admin\Resources\Category\Tables\CategoriesTable;
 use NinjaPortal\Admin\Resources\Category\Pages;
 use NinjaPortal\FilamentTranslations\Resources\Concerns\Translatable;
+use NinjaPortal\Portal\Contracts\Services\CategoryServiceInterface;
 use NinjaPortal\Portal\Models\Category;
 use NinjaPortal\Portal\Services\CategoryService;
 use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
@@ -66,7 +67,7 @@ class CategoryResource extends Resource
 
     public static function service(): ServiceInterface
     {
-        return new CategoryService();
+        return app(CategoryServiceInterface::class);
     }
 
     public static function getNavigationGroup(): ?string

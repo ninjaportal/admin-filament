@@ -15,6 +15,7 @@ use NinjaPortal\Admin\Resources\User\Pages\EditUser;
 use NinjaPortal\Admin\Resources\User\Pages\ListUsers;
 use NinjaPortal\Admin\Resources\User\Pages\UserAppsPage;
 use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
+use NinjaPortal\Portal\Contracts\Services\UserServiceInterface;
 use NinjaPortal\Portal\Models\User;
 use NinjaPortal\Portal\Services\UserService;
 
@@ -56,7 +57,7 @@ class UserResource extends Resource
 
     public static function service(): ServiceInterface
     {
-        return new UserService();
+        return app(UserServiceInterface::class);
     }
 
     public static function getNavigationGroup(): ?string

@@ -13,6 +13,7 @@ use NinjaPortal\Admin\Constants;
 use NinjaPortal\Admin\Resources\Audience\Schemas\AudienceForm;
 use NinjaPortal\Admin\Resources\Audience\Tables\AudiencesTable;
 use NinjaPortal\Admin\Resources\Audience\Pages;
+use NinjaPortal\Portal\Contracts\Services\AudienceServiceInterface;
 use NinjaPortal\Portal\Models\Audience;
 use NinjaPortal\Portal\Services\AudienceService;
 use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
@@ -66,7 +67,7 @@ class AudienceResource extends Resource
 
     public static function service(): ServiceInterface
     {
-        return new AudienceService();
+        return app(AudienceServiceInterface::class);
     }
 
     public static function getNavigationGroup(): ?string

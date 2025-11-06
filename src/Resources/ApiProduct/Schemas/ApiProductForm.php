@@ -9,6 +9,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use NinjaPortal\Portal\Contracts\Services\ApiProductServiceInterface;
 use NinjaPortal\Portal\Models\ApiProduct;
 use NinjaPortal\Portal\Models\Audience;
 use NinjaPortal\Portal\Models\Category;
@@ -54,7 +55,7 @@ class ApiProductForm
                         ->lazy()
                         ->options(function () {
                             $products = cache()->remember('apigee:products', now()->addMinutes(5), function () {
-                                return (new ApiProductService())->apigeeProducts();
+                                return app(ApiProductServiceInterface::class)->apigeeProducts();
                             });
                             return collect($products)->mapWithKeys(fn ($p) => [$p->getName() => $p->getName()]);
                         })

@@ -13,6 +13,7 @@ use NinjaPortal\Admin\Resources\ApiProduct\Pages\ListApiProducts;
 use NinjaPortal\Admin\Resources\ApiProduct\Schemas\ApiProductForm;
 use NinjaPortal\Admin\Resources\ApiProduct\Tables\ApiProductsTable;
 use NinjaPortal\FilamentTranslations\Resources\Concerns\Translatable;
+use NinjaPortal\Portal\Contracts\Services\ApiProductServiceInterface;
 use NinjaPortal\Portal\Contracts\Services\ServiceInterface;
 use NinjaPortal\Portal\Models\ApiProduct;
 use NinjaPortal\Portal\Services\ApiProductService;
@@ -64,7 +65,7 @@ class ApiProductResource extends Resource
 
     public static function service(): ServiceInterface
     {
-        return new ApiProductService();
+        return app(ApiProductServiceInterface::class);
     }
 
     public static function getNavigationGroup(): ?string

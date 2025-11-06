@@ -28,8 +28,8 @@ class NinjaAdminPlugin implements Plugin
     ];
 
     protected array $widgets = [
-//        Widgets\OverviewWidget::class,
-//        Widgets\UsersWidgetTable::class,
+        Widgets\OverviewWidget::class,
+        Widgets\UsersWidgetTable::class,
     ];
 
     protected array $pages = [
@@ -55,7 +55,6 @@ class NinjaAdminPlugin implements Plugin
                 FilamentShieldPlugin::make(),
                 NinjaFilamentTranslatablePlugin::make()
                     ->defaultLocales(array_keys(config('ninjaportal.locales'))),
-                AIPlugin::make(),
             ])
             ->navigationGroups($this->getNavigationGroups());
     }
