@@ -11,6 +11,7 @@ return [
         'settings' => 'Settings',
         "content" => "Content",
         'users' => 'Users',
+        'monetization' => 'Monetization',
     ],
     'active_users' => 'Active Users',
     'total_users' => 'Total Users',

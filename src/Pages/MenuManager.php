@@ -2,14 +2,14 @@
 
 namespace NinjaPortal\Admin\Pages;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\CreateAction;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Arr;
@@ -24,8 +24,8 @@ class MenuManager extends Page
     use InteractsWithForms, InteractsWithActions, HasPageShield;
 
     protected static ?string $title = 'Menu Manager';
-    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
-    protected static string $view = "ninjaadmin::pages.menu-manager";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-bars-3';
+    protected string $view = "ninjaadmin::pages.menu-manager";
 
     public ?array $links = [];
     public ?array $newLink = [];
@@ -44,7 +44,7 @@ class MenuManager extends Page
                 ->model(Menu::class)
                 ->createAnother(false)
                 ->label('New Menu')
-                ->form([
+                ->schema([
                     Section::make()->schema([
                         TextInput::make('name')
                             ->label('Name')
@@ -70,9 +70,9 @@ class MenuManager extends Page
 
     // forms
 
-    public function menuForm(Form $form): Form
+    public function menuForm(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
             Section::make()->schema([
                 Select::make('currentMenu')
                     ->live(onBlur: true)
@@ -87,9 +87,9 @@ class MenuManager extends Page
     }
 
 
-    public function linksForm(Form $form): Form
+    public function linksForm(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
             TextInput::make('name')->label('Name')->required(),
             TextInput::make('url')->label('URL')->required(),
         ])->statePath('newLink');

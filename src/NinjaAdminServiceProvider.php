@@ -2,6 +2,7 @@
 
 namespace NinjaPortal\Admin;
 
+use NinjaPortal\Admin\Models\Admin;
 use Illuminate\Support\Facades\Config;
 use NinjaPortal\Admin\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -34,13 +35,15 @@ class NinjaAdminServiceProvider extends PackageServiceProvider
     {
         Config::set('auth.providers.admin',[
             'driver' => 'eloquent',
-            'model' => \NinjaPortal\Admin\Models\Admin::class,
+            'model' => Admin::class,
         ]);
 
         Config::set('auth.guards.admin',[
             'driver' => 'session',
             'provider' => 'admin',
         ]);
+
+        Config::set("ninjaadmin.locales", config('ninjaportal.locales', ['en' => "English"]));
     }
 
 

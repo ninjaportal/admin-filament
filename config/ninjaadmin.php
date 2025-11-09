@@ -1,5 +1,3 @@
 <?php
 
-return [
-    'locales' => ['en'],
-];
+return [];
