@@ -22,6 +22,7 @@ use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Lordjoo\LaraApigee\Contracts\Services\ApiProductServiceInterface;
 use NinjaPortal\Admin\Resources\User\Pages\Schemas\ManageUserAppSchema;
 use NinjaPortal\Admin\Resources\User\Pages\Tables\UserAppsTable;
 use NinjaPortal\Admin\Resources\User\UserResource;
@@ -535,7 +536,7 @@ class UserAppsPage extends Page implements HasActions, HasTable, HasSchemas
 
         try {
             $this->apis = Cache::remember('user-apps.api-products', now()->addMinutes(10), function () {
-                return collect((new ApiProductService())->apigeeProducts() ?? [])
+                return collect(app(\NinjaPortal\Portal\Contracts\Services\ApiProductServiceInterface::class)->apigeeProducts() ?? [])
                     ->mapWithKeys(fn($p) => [$p->getName() => $p->getName()]);
             });
         } catch (Exception $e) {

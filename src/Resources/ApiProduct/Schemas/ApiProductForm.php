@@ -54,7 +54,7 @@ class ApiProductForm
                         ->label(__('Apigee Product'))
                         ->lazy()
                         ->options(function () {
-                            $products = cache()->remember('apigee:products', now()->addMinutes(5), function () {
+                            $products = cache()->remember('apigee:products', now()->addHour(), function () {
                                 return app(ApiProductServiceInterface::class)->apigeeProducts();
                             });
                             return collect($products)->mapWithKeys(fn ($p) => [$p->getName() => $p->getName()]);
