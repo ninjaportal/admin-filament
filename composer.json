@@ -1,0 +1,47 @@
+{
+    "name": "ninjaportal/admin-filament",
+    "description": "Filament admin panel package for NinjaPortal.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^5.2",
+        "illuminate/contracts": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0",
+        "ninjaportal/portal": "^1.0 || dev-main || dev-master",
+        "spatie/laravel-package-tools": "^1.16",
+        "spatie/laravel-permission": "^6.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.20",
+        "orchestra/testbench": "^10.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "NinjaPortal\\Admin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NinjaPortal\\Admin\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NinjaPortal\\Admin\\AdminFilamentServiceProvider",
+                "NinjaPortal\\Admin\\PortalAdminPanelProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist",
+        "format": "vendor/bin/pint",
+        "format:test": "vendor/bin/pint --test"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
