@@ -15,6 +15,7 @@ class AdminFilamentServiceProvider extends PackageServiceProvider
         $package
             ->name('portal-admin')
             ->hasConfigFile('portal-admin')
+            ->hasViews()
             ->hasTranslations();
     }
 

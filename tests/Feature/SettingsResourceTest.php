@@ -137,4 +137,36 @@ class SettingsResourceTest extends TestCase
             ->assertSee('View settings')
             ->assertSee('Add setting');
     }
+
+    public function test_settings_tabs_scope_the_table_records_by_group(): void
+    {
+        $branding = SettingGroup::query()->create([
+            'name' => 'Branding',
+        ]);
+
+        $portal = SettingGroup::query()->create([
+            'name' => 'Portal',
+        ]);
+
+        $brandingSetting = Setting::query()->create([
+            'key' => 'branding.primary_color',
+            'label' => 'Primary color',
+            'type' => 'string',
+            'value' => '#111827',
+            'setting_group_id' => $branding->getKey(),
+        ]);
+
+        $portalSetting = Setting::query()->create([
+            'key' => 'portal.name',
+            'label' => 'Portal name',
+            'type' => 'string',
+            'value' => 'NinjaPortal',
+            'setting_group_id' => $portal->getKey(),
+        ]);
+
+        Livewire::test(ListSettings::class)
+            ->set('activeTab', SettingUi::groupTabKey($branding->getKey()))
+            ->assertCanSeeTableRecords([$brandingSetting])
+            ->assertCanNotSeeTableRecords([$portalSetting]);
+    }
 }
